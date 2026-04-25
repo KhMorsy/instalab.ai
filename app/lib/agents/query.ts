@@ -1,17 +1,27 @@
 import type { Domain, ParsedQuestion } from '../types';
 
 const domainHints = [
-  { key: 'diagnostics', terms: ['biosensor', 'antibody', 'blood', 'elisa', 'diagnostic', 'assay', 'crp'] },
-  { key: 'gut', terms: ['mouse', 'mice', 'probiotic', 'intestinal', 'fitc', 'dextran', 'microbiome'] },
-  { key: 'cell', terms: ['cell', 'hela', 'cryoprotectant', 'thaw', 'freezing', 'viability', 'trehalose'] },
-  { key: 'climate', terms: ['co2', 'carbon', 'bioelectrochemical', 'acetate', 'cathode', 'sporomusa'] },
-] satisfies Array<{ key: Domain; terms: string[] }>;
+  {
+    key: 'diagnostics',
+    terms: ['biosensor', 'anti-crp', 'c-reactive protein', 'whole blood', 'elisa', 'diagnostic', 'crp'],
+  },
+  {
+    key: 'gut',
+    terms: ['c57bl/6', 'mouse', 'mice', 'probiotic', 'intestinal', 'fitc-dextran', 'fitc', 'dextran', 'microbiome'],
+  },
+  {
+    key: 'cell',
+    terms: ['hela', 'cryoprotectant', 'post-thaw', 'thaw', 'freezing', 'viability', 'trehalose', 'dmso'],
+  },
+  {
+    key: 'climate',
+    terms: ['sporomusa', 'co2', 'carbon', 'bioelectrochemical', 'acetate', 'cathode', 'she'],
+  },
+] satisfies Array<{ key: Exclude<Domain, 'general'>; terms: string[] }>;
 
 export function parseScientificQuestion(question: string): ParsedQuestion {
   const normalized = question.toLowerCase();
-  const domain =
-    domainHints.find(({ terms }) => terms.some((term) => normalized.includes(term)))?.key ??
-    'general';
+  const domain = classifyDomain(normalized);
 
   const outcome =
     question.match(/(?:will|to)\s+(.+?)(?:,| due to| compared| within|$)/i)?.[1]?.trim() ??
@@ -43,6 +53,17 @@ export function parseScientificQuestion(question: string): ParsedQuestion {
     mechanism,
     modelSystem,
   };
+}
+
+function classifyDomain(normalizedQuestion: string): Domain {
+  const scored = domainHints
+    .map(({ key, terms }) => ({
+      key,
+      score: terms.reduce((sum, term) => sum + (normalizedQuestion.includes(term) ? term.length : 0), 0),
+    }))
+    .sort((left, right) => right.score - left.score);
+
+  return scored[0]?.score ? scored[0].key : 'general';
 }
 
 function experimentTypeFor(domain: Domain) {
