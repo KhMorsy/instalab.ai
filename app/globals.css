@@ -70,7 +70,7 @@ button {
   padding: 28px 20px 72px;
 }
 
-.topbar {
+.topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -83,6 +83,17 @@ button {
   gap: 12px;
   align-items: center;
   font-weight: 900;
+}
+
+.brandMark:first-child {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 16px;
+  color: #04100d;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  box-shadow: 0 14px 34px rgba(121, 242, 192, 0.2);
 }
 
 .brandIcon {
@@ -234,7 +245,7 @@ h3 {
   color: var(--text);
 }
 
-.cockpit {
+.testerGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
   gap: 22px;
@@ -268,6 +279,15 @@ h3 {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
+}
+
+.sectionTitle > span,
+.sectionTitle span,
+.fieldLabel {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
 }
 
 .sectionTitle p {
@@ -312,7 +332,7 @@ select:focus {
   font-size: 0.88rem;
 }
 
-.ctaRow {
+.buttonRow {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -320,8 +340,8 @@ select:focus {
 }
 
 button,
-.primary,
-.secondary,
+.primaryButton,
+.secondaryButton,
 .ghostButton {
   display: inline-flex;
   align-items: center;
@@ -348,12 +368,12 @@ button:disabled {
   transform: none;
 }
 
-.primary {
+.primaryButton {
   color: #04100d;
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
 }
 
-.secondary,
+.secondaryButton,
 .ghostButton {
   color: var(--text);
   background: rgba(255, 255, 255, 0.07);
@@ -366,7 +386,7 @@ button:disabled {
   font-size: 0.82rem;
 }
 
-.sampleGrid {
+.sampleCards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -374,10 +394,20 @@ button:disabled {
 }
 
 .sampleCard {
+  display: grid;
+  min-height: 118px;
+  align-content: start;
+  gap: 5px;
+  border-radius: 18px;
   padding: 15px;
   text-align: left;
   color: var(--text);
   background: rgba(255, 255, 255, 0.055);
+}
+
+.sampleCard.active {
+  border-color: rgba(121, 242, 192, 0.7);
+  background: rgba(121, 242, 192, 0.12);
 }
 
 .sampleCard span {
@@ -400,7 +430,7 @@ button:disabled {
   line-height: 1.45;
 }
 
-.testPanel {
+.runPanel {
   display: grid;
   gap: 16px;
   position: sticky;
@@ -412,6 +442,18 @@ button:disabled {
   border-radius: 22px;
   padding: 16px;
   background: var(--panel-soft);
+}
+
+.requestPreview {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  color: var(--brand);
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .summaryBox p,
@@ -427,11 +469,23 @@ button:disabled {
   white-space: pre-wrap;
 }
 
-.loadingCard {
+.loadingGrid {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
 }
 
+.skeletonCard {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.skeletonCard div,
 .loadingLine {
   height: 13px;
   border-radius: 999px;
@@ -448,6 +502,60 @@ button:disabled {
   to {
     background-position: -220% 0;
   }
+}
+
+.resultsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 24px;
+  margin-top: 28px;
+  background: linear-gradient(145deg, rgba(121, 242, 192, 0.12), rgba(115, 199, 255, 0.06));
+  box-shadow: var(--shadow);
+}
+
+.resultsHeader p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.reportIntro {
+  display: grid;
+  gap: 18px;
+  border: 1px dashed rgba(121, 242, 192, 0.32);
+  border-radius: 28px;
+  padding: 24px;
+  margin-top: 28px;
+  background: rgba(121, 242, 192, 0.055);
+}
+
+.reportIntro h2 {
+  margin-bottom: 8px;
+}
+
+.reportIntro p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.reportPreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reportPreviewGrid span {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.86rem;
+  font-weight: 850;
 }
 
 .results {
@@ -481,7 +589,7 @@ button:disabled {
   font-weight: 850;
 }
 
-.metricsGrid,
+.metricGrid,
 .metaGrid,
 .qcGrid,
 .referenceGrid,
@@ -493,7 +601,7 @@ button:disabled {
   gap: 14px;
 }
 
-.metricsGrid {
+.metricGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -635,10 +743,58 @@ button:disabled {
 }
 
 .protocolHeader p,
-.protocolSection p {
+.protocolSection p,
+.protocolDetailGrid p,
+.protocolSubgrid p {
   margin-bottom: 0;
   color: var(--muted);
   line-height: 1.58;
+}
+
+.protocolDetailGrid,
+.protocolSubgrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.protocolDetailGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.protocolSubgrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.protocolDetailGrid > div,
+.protocolSubgrid > div {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.protocolDetailGrid span,
+.protocolSubgrid span,
+.sourceList span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.protocolSubgrid ul,
+.protocolSubgrid ol,
+.cleanList {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .protocolMeta {
@@ -694,6 +850,7 @@ button:disabled {
   line-height: 1.55;
 }
 
+.sourceList,
 .protocolSources {
   display: flex;
   flex-wrap: wrap;
@@ -701,12 +858,19 @@ button:disabled {
   margin-top: 12px;
 }
 
+.sourceList small,
 .protocolSources span {
   border-radius: 999px;
   padding: 6px 9px;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.06);
   font-size: 0.78rem;
+}
+
+.supportGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
 }
 
 .tableWrap {

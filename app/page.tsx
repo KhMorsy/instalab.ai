@@ -119,7 +119,11 @@ export default function Home() {
         throw new Error(payload.error ?? 'Unable to generate plan.');
       }
 
-      setPlan((await response.json()) as ExperimentPlan);
+      const generatedPlan = (await response.json()) as ExperimentPlan;
+      setPlan(generatedPlan);
+      window.setTimeout(() => {
+        document.getElementById('report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unknown error');
     } finally {
@@ -318,8 +322,26 @@ export default function Home() {
         </section>
       ) : null}
 
+      {!plan && !isLoading ? (
+        <section className="emptyReport panel" id="report">
+          <div>
+            <span className="eyebrow">Full report preview</span>
+            <h2>Run a hypothesis to generate the required deliverables.</h2>
+            <p>
+              The final report will show Literature QC, a protocols.io-style protocol, materials and supply chain,
+              budget, timeline, validation, staffing, risks, and the scientist review loop.
+            </p>
+          </div>
+          <div className="deliverableGrid">
+            {['Literature QC', 'Protocol', 'Materials', 'Budget', 'Timeline', 'Validation'].map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {plan ? (
-        <>
+        <section className="reportStack" id="report">
           <section className="resultsHeader">
             <div>
               <span className="eyebrow">Generated plan</span>
@@ -677,7 +699,7 @@ export default function Home() {
               {reviewSaved ? <p className="success">{reviewSaved}</p> : null}
             </form>
           </section>
-        </>
+        </section>
       ) : null}
     </main>
   );
