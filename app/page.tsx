@@ -413,14 +413,76 @@ export default function Home() {
               </div>
             </div>
             <ol className="protocolList">
-              {plan.protocol.map((step) => (
+              {plan.protocol.map((step, index) => (
                 <li key={step.id}>
-                  <div>
-                    <strong>{step.title}</strong>
-                    <span>{step.duration}</span>
+                  <div className="protocolHeader">
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <strong>{step.title}</strong>
+                      <small>{step.duration}</small>
+                    </div>
                   </div>
                   <p>{step.method}</p>
-                  <small>QC gate: {step.qc}</small>
+                  <div className="protocolDetailGrid">
+                    <div>
+                      <span>Purpose</span>
+                      <p>{step.method}</p>
+                    </div>
+                    <div>
+                      <span>Time estimate</span>
+                      <p>{step.estimatedTime}</p>
+                    </div>
+                  </div>
+                  <div className="protocolSubgrid">
+                    <div>
+                      <span>Inputs</span>
+                      <ul>
+                        {step.inputs.map((input) => (
+                          <li key={input}>{input}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <span>Equipment</span>
+                      <ul>
+                        {step.equipment.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <span>Actions</span>
+                      <ol>
+                        {step.actions.map((action) => (
+                          <li key={action}>{action}</li>
+                        ))}
+                      </ol>
+                    </div>
+                    <div>
+                      <span>Safety and handling</span>
+                      <p>{step.safety}</p>
+                    </div>
+                    <div>
+                      <span>QC gate</span>
+                      <p>{step.qc}</p>
+                    </div>
+                    <div>
+                      <span>Notes</span>
+                      <ul>
+                        {step.notes.map((note) => (
+                          <li key={note}>{note}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  {step.sources.length ? (
+                    <div className="sourceList">
+                      <span>Grounded sources</span>
+                      {step.sources.map((source) => (
+                        <small key={source}>{source}</small>
+                      ))}
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ol>

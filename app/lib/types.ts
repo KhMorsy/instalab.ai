@@ -30,10 +30,17 @@ export type ParsedQuestion = {
 
 export type ProtocolStep = {
   id: string;
+  stepNumber: number;
   title: string;
   duration: string;
+  estimatedTime: string;
+  inputs: string[];
+  equipment: string[];
   method: string;
+  actions: string[];
   qc: string;
+  safety: string;
+  notes: string[];
   sources: string[];
 };
 

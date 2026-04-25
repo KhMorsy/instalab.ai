@@ -604,14 +604,14 @@ button:disabled {
   counter-increment: protocol;
 }
 
-.protocolList li > div:first-child {
+.protocolHeader {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
 }
 
-.protocolList li > div:first-child::before {
+.protocolHeader::before {
   display: grid;
   flex: 0 0 34px;
   width: 34px;
@@ -622,6 +622,76 @@ button:disabled {
   content: counter(protocol);
   background: var(--brand);
   font-weight: 950;
+}
+
+.protocolHeader > div {
+  flex: 1;
+}
+
+.protocolHeader strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1.08rem;
+}
+
+.protocolHeader p,
+.protocolSection p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.protocolMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.protocolMeta span {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.protocolMeta b {
+  color: var(--text);
+  font-size: 0.9rem;
+  text-transform: none;
+}
+
+.protocolBody {
+  display: grid;
+  gap: 14px;
+}
+
+.protocolSection {
+  border-left: 3px solid rgba(121, 242, 192, 0.55);
+  padding-left: 13px;
+}
+
+.protocolSection h4 {
+  margin: 0 0 8px;
+  color: var(--brand);
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.protocolChecklist {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .protocolSources {
