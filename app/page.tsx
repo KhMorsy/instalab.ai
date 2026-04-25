@@ -4,20 +4,51 @@ import { FormEvent, useMemo, useState } from 'react';
 import type { ExperimentPlan, ReviewCorrection } from './lib/types';
 
 const sampleQuestions = [
-  'A paper-based electrochemical biosensor functionalized with anti-CRP antibodies will detect C-reactive protein in whole blood at concentrations below 0.5 mg/L within 10 minutes, matching laboratory ELISA sensitivity without requiring sample preprocessing.',
-  'Supplementing C57BL/6 mice with Lactobacillus rhamnosus GG for 4 weeks will reduce intestinal permeability by at least 30% compared to controls, measured by FITC-dextran assay, due to upregulation of tight junction proteins claudin-1 and occludin.',
-  'Replacing sucrose with trehalose as a cryoprotectant in the freezing medium will increase post-thaw viability of HeLa cells by at least 15 percentage points compared to the standard DMSO protocol, due to trehalose membrane stabilization at low temperatures.',
-  'Introducing Sporomusa ovata into a bioelectrochemical system at a cathode potential of -400mV vs SHE will fix CO2 into acetate at a rate of at least 150 mmol/L/day, outperforming current biocatalytic carbon capture benchmarks by at least 20%.',
+  {
+    label: 'Diagnostics',
+    title: 'Rapid CRP biosensor',
+    helper: 'Paper-based blood diagnostic benchmarked against ELISA.',
+    question:
+      'A paper-based electrochemical biosensor functionalized with anti-CRP antibodies will detect C-reactive protein in whole blood at concentrations below 0.5 mg/L within 10 minutes, matching laboratory ELISA sensitivity without requiring sample preprocessing.',
+  },
+  {
+    label: 'Gut health',
+    title: 'Probiotic barrier study',
+    helper: 'Mouse intervention with FITC-dextran permeability readout.',
+    question:
+      'Supplementing C57BL/6 mice with Lactobacillus rhamnosus GG for 4 weeks will reduce intestinal permeability by at least 30% compared to controls, measured by FITC-dextran assay, due to upregulation of tight junction proteins claudin-1 and occludin.',
+  },
+  {
+    label: 'Cell biology',
+    title: 'Trehalose cryoprotection',
+    helper: 'HeLa freezing protocol optimization against DMSO.',
+    question:
+      'Replacing sucrose with trehalose as a cryoprotectant in the freezing medium will increase post-thaw viability of HeLa cells by at least 15 percentage points compared to the standard DMSO protocol, due to trehalose membrane stabilization at low temperatures.',
+  },
+  {
+    label: 'Climate biotech',
+    title: 'CO2 to acetate system',
+    helper: 'Bioelectrochemical carbon fixation with Sporomusa ovata.',
+    question:
+      'Introducing Sporomusa ovata into a bioelectrochemical system at a cathode potential of -400mV vs SHE will fix CO2 into acetate at a rate of at least 150 mmol/L/day, outperforming current biocatalytic carbon capture benchmarks by at least 20%.',
+  },
 ];
 
 const sections = [
   { id: 'qc', label: 'Literature QC' },
   { id: 'protocol', label: 'Protocol' },
   { id: 'materials', label: 'Materials' },
-  { id: 'budget', label: 'Budget' },
   { id: 'timeline', label: 'Timeline' },
-  { id: 'validation', label: 'Validation' },
-  { id: 'review', label: 'Scientist review' },
+  { id: 'review', label: 'Review loop' },
+];
+
+const agentStages = [
+  'Parse hypothesis',
+  'Search literature',
+  'Ground protocol',
+  'Estimate supply chain',
+  'Build timeline',
+  'Define validation',
 ];
 
 function currency(value: number) {
@@ -28,8 +59,13 @@ function currency(value: number) {
   }).format(value);
 }
 
+function noveltyClass(signal?: string) {
+  return signal?.replaceAll(' ', '-') ?? 'not-run';
+}
+
 export default function Home() {
-  const [question, setQuestion] = useState(sampleQuestions[0]);
+  const [question, setQuestion] = useState(sampleQuestions[0].question);
+  const [activeSample, setActiveSample] = useState(0);
   const [plan, setPlan] = useState<ExperimentPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,17 +74,38 @@ export default function Home() {
   const [reviewNote, setReviewNote] = useState('');
   const [rating, setRating] = useState(4);
   const [reviewSaved, setReviewSaved] = useState('');
+  const [copied, setCopied] = useState('');
 
   const totalBudget = useMemo(
     () => plan?.budget.reduce((sum, line) => sum + line.estimatedCostUsd, 0) ?? 0,
     [plan],
   );
 
+  const requestPreview = useMemo(
+    () => JSON.stringify({ question }, null, 2),
+    [question],
+  );
+
+  const isReadyToSubmit = question.trim().length >= 20 && !isLoading;
+
+  async function copyText(text: string, label: string) {
+    await navigator.clipboard.writeText(text);
+    setCopied(label);
+    window.setTimeout(() => setCopied(''), 1800);
+  }
+
+  function chooseSample(index: number) {
+    setActiveSample(index);
+    setQuestion(sampleQuestions[index].question);
+    setError('');
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
     setError('');
     setReviewSaved('');
+    setCopied('');
 
     try {
       const response = await fetch('/api/plan', {
@@ -98,57 +155,187 @@ export default function Home() {
     });
 
     if (response.ok) {
-      setReviewSaved('Feedback captured. Generate a similar plan to see the correction used as review memory.');
+      setReviewSaved('Feedback saved. Generate a similar plan to see this correction applied.');
       setReviewCorrection('');
       setReviewNote('');
+    } else {
+      setReviewSaved('Could not save feedback. Please add a correction and rationale.');
     }
   }
 
   return (
-    <main>
-      <section className="hero">
+    <main className="appShell">
+      <header className="topBar">
+        <div className="brandMark">IL</div>
         <div>
+          <strong>InstaLab AI Scientist</strong>
+          <span>Hypothesis to runnable experiment plan</span>
+        </div>
+        <a href="#tester">Test the app</a>
+      </header>
+
+      <section className="hero">
+        <div className="heroCopyBlock">
           <p className="eyebrow">Hack-Nation Challenge 04 - Fulcrum Science</p>
-          <h1>AI Scientist: from hypothesis to runnable experiment plan</h1>
+          <h1>Plan lab-ready experiments with a coordinated AI agent team.</h1>
           <p className="heroCopy">
-            A multi-agent planning system that checks novelty, grounds protocols in scientific sources,
-            estimates materials and budget, and captures scientist review as reusable feedback memory.
+            Enter a scientific hypothesis, run a fast literature QC check, and inspect a full operational
+            plan with protocol, suppliers, budget, timeline, validation, and feedback memory.
           </p>
+          <div className="heroActions">
+            <a className="primaryLink" href="#tester">
+              Start testing
+            </a>
+            <a className="ghostLink" href="#review">
+              Review loop
+            </a>
+          </div>
         </div>
-        <div className="agentCard">
-          <span>Agent swarm</span>
+        <aside className="agentCard">
+          <span>Multi-agent run</span>
           <strong>Scout / Protocol / Supply / Schedule / Validation / Review memory</strong>
-        </div>
+          <div className="miniMetrics">
+            <div>
+              <b>3</b>
+              <small>required stages</small>
+            </div>
+            <div>
+              <b>6</b>
+              <small>specialist agents</small>
+            </div>
+            <div>
+              <b>0</b>
+              <small>client-side secrets</small>
+            </div>
+          </div>
+        </aside>
       </section>
 
-      <section className="panel inputPanel">
-        <div className="sectionTitle">
-          <span>Stage 1</span>
-          <h2>Scientific question</h2>
-        </div>
-        <form onSubmit={submit}>
+      <section className="testerGrid" id="tester">
+        <form className="panel inputPanel" onSubmit={submit}>
+          <div className="sectionTitle">
+            <div>
+              <span>Stage 1</span>
+              <h2>Hypothesis tester</h2>
+            </div>
+            <small>{question.trim().length} characters</small>
+          </div>
+
+          <label className="fieldLabel" htmlFor="hypothesis">
+            Scientific question or hypothesis
+          </label>
           <textarea
+            id="hypothesis"
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            placeholder="Describe a hypothesis with intervention, measurable outcome, threshold, mechanism, and control..."
+            placeholder="Describe an intervention, model system, measurable outcome, threshold, mechanism, and control..."
           />
-          <div className="sampleGrid">
+
+          <div className="sampleCards" aria-label="Sample hypotheses">
             {sampleQuestions.map((sample, index) => (
-              <button key={sample} type="button" onClick={() => setQuestion(sample)}>
-                Sample {index + 1}
+              <button
+                className={activeSample === index ? 'sampleCard active' : 'sampleCard'}
+                key={sample.title}
+                type="button"
+                onClick={() => chooseSample(index)}
+              >
+                <span>{sample.label}</span>
+                <strong>{sample.title}</strong>
+                <small>{sample.helper}</small>
               </button>
             ))}
           </div>
-          <button className="primary" disabled={isLoading} type="submit">
-            {isLoading ? 'Coordinating agents...' : 'Run literature QC and generate plan'}
-          </button>
+
+          <div className="buttonRow">
+            <button className="primaryButton" disabled={!isReadyToSubmit} type="submit">
+              {isLoading ? 'Running agent workflow...' : 'Run QC and generate plan'}
+            </button>
+            <button
+              className="secondaryButton"
+              type="button"
+              onClick={() => copyText(requestPreview, 'request')}
+            >
+              Copy API payload
+            </button>
+            <button
+              className="secondaryButton"
+              type="button"
+              onClick={() => {
+                setQuestion('');
+                setPlan(null);
+                setError('');
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          {copied === 'request' ? <p className="success">API payload copied.</p> : null}
+          {error ? <p className="error">{error}</p> : null}
         </form>
-        {error ? <p className="error">{error}</p> : null}
+
+        <aside className="panel runPanel">
+          <div className="sectionTitle">
+            <div>
+              <span>Live run</span>
+              <h2>Agent progress</h2>
+            </div>
+            <div className={isLoading ? 'statusPill running' : plan ? 'statusPill done' : 'statusPill'}>
+              {isLoading ? 'Running' : plan ? 'Complete' : 'Ready'}
+            </div>
+          </div>
+
+          <div className="agentRail">
+            {agentStages.map((stage, index) => (
+              <div className={isLoading || plan ? 'agentStep active' : 'agentStep'} key={stage}>
+                <span>{index + 1}</span>
+                <div>
+                  <strong>{stage}</strong>
+                  <small>
+                    {isLoading
+                      ? 'Queued in the coordinator'
+                      : plan
+                        ? 'Completed for latest plan'
+                        : 'Waiting for hypothesis'}
+                  </small>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <pre className="requestPreview">{requestPreview}</pre>
+        </aside>
       </section>
+
+      {isLoading ? (
+        <section className="loadingGrid" aria-live="polite">
+          {['Literature QC', 'Protocol grounding', 'Materials and budget'].map((item) => (
+            <div className="skeletonCard" key={item}>
+              <span>{item}</span>
+              <div />
+              <div />
+            </div>
+          ))}
+        </section>
+      ) : null}
 
       {plan ? (
         <>
-          <nav className="toc">
+          <section className="resultsHeader">
+            <div>
+              <span className="eyebrow">Generated plan</span>
+              <h2>{plan.title}</h2>
+              <p>{plan.executiveSummary}</p>
+            </div>
+            <button
+              className="secondaryButton"
+              type="button"
+              onClick={() => copyText(JSON.stringify(plan, null, 2), 'plan')}
+            >
+              {copied === 'plan' ? 'Copied plan' : 'Copy plan JSON'}
+            </button>
+          </section>
+
+          <nav className="toc" aria-label="Plan sections">
             {sections.map((section) => (
               <a key={section.id} href={`#${section.id}`}>
                 {section.label}
@@ -156,32 +343,60 @@ export default function Home() {
             ))}
           </nav>
 
+          <section className="metricGrid">
+            <div className="metricCard">
+              <span>Novelty signal</span>
+              <strong>{plan.literatureQc.noveltySignal}</strong>
+            </div>
+            <div className="metricCard">
+              <span>Estimated budget</span>
+              <strong>{currency(totalBudget)}</strong>
+            </div>
+            <div className="metricCard">
+              <span>Materials</span>
+              <strong>{plan.materials.length}</strong>
+            </div>
+            <div className="metricCard">
+              <span>Confidence</span>
+              <strong>{Math.round(plan.confidence * 100)}%</strong>
+            </div>
+          </section>
+
           <section className="panel" id="qc">
             <div className="sectionTitle">
-              <span>Stage 2</span>
-              <h2>Literature QC</h2>
-            </div>
-            <div className="qcGrid">
-              <div className={`novelty ${plan.literatureQc.noveltySignal.replaceAll(' ', '-')}`}>
+              <div>
+                <span>Stage 2</span>
+                <h2>Literature QC</h2>
+              </div>
+              <div className={`novelty ${noveltyClass(plan.literatureQc.noveltySignal)}`}>
                 {plan.literatureQc.noveltySignal}
               </div>
-              <p>{plan.literatureQc.rationale}</p>
             </div>
-            <div className="referenceGrid">
-              {plan.literatureQc.references.map((reference) => (
-                <a key={reference.url} className="reference" href={reference.url} target="_blank">
-                  <strong>{reference.title}</strong>
-                  <span>{reference.source}</span>
-                  <small>{reference.relevance}</small>
-                </a>
-              ))}
-            </div>
+            <p className="mutedText">{plan.literatureQc.rationale}</p>
+            {plan.literatureQc.references.length ? (
+              <div className="referenceGrid">
+                {plan.literatureQc.references.map((reference) => (
+                  <a key={reference.url} className="reference" href={reference.url} rel="noreferrer" target="_blank">
+                    <span>{reference.source}</span>
+                    <strong>{reference.title}</strong>
+                    <small>Relevance score: {reference.relevance}</small>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="emptyState">
+                No live references returned. Add <code>TAVILY_API_KEY</code> on the server for real literature hits.
+              </div>
+            )}
           </section>
 
           <section className="panel" id="protocol">
             <div className="sectionTitle">
-              <span>Stage 3</span>
-              <h2>Runnable experiment plan</h2>
+              <div>
+                <span>Stage 3</span>
+                <h2>Runnable experiment plan</h2>
+              </div>
+              <small>{plan.experimentType}</small>
             </div>
             <div className="metaGrid">
               <div>
@@ -193,15 +408,10 @@ export default function Home() {
                 <strong>{plan.experimentType}</strong>
               </div>
               <div>
-                <span>Estimated budget</span>
-                <strong>{currency(totalBudget)}</strong>
-              </div>
-              <div>
-                <span>Confidence</span>
-                <strong>{Math.round(plan.confidence * 100)}%</strong>
+                <span>Generated</span>
+                <strong>{new Date(plan.generatedAt).toLocaleString()}</strong>
               </div>
             </div>
-            <h3>Protocol</h3>
             <ol className="protocolList">
               {plan.protocol.map((step) => (
                 <li key={step.id}>
@@ -210,7 +420,7 @@ export default function Home() {
                     <span>{step.duration}</span>
                   </div>
                   <p>{step.method}</p>
-                  <small>QC: {step.qc}</small>
+                  <small>QC gate: {step.qc}</small>
                 </li>
               ))}
             </ol>
@@ -218,7 +428,12 @@ export default function Home() {
 
           <section className="panel twoColumn" id="materials">
             <div>
-              <h2>Materials and supply chain</h2>
+              <div className="sectionTitle compact">
+                <div>
+                  <span>Operations</span>
+                  <h2>Materials and supply chain</h2>
+                </div>
+              </div>
               <div className="tableWrap">
                 <table>
                   <thead>
@@ -245,7 +460,12 @@ export default function Home() {
               </div>
             </div>
             <div id="budget">
-              <h2>Budget</h2>
+              <div className="sectionTitle compact">
+                <div>
+                  <span>Costs</span>
+                  <h2>Budget</h2>
+                </div>
+              </div>
               <div className="budgetList">
                 {plan.budget.map((line) => (
                   <div key={line.category}>
@@ -260,12 +480,18 @@ export default function Home() {
 
           <section className="panel twoColumn" id="timeline">
             <div>
-              <h2>Timeline and dependencies</h2>
+              <div className="sectionTitle compact">
+                <div>
+                  <span>Execution</span>
+                  <h2>Timeline and dependencies</h2>
+                </div>
+              </div>
               <div className="timeline">
-                {plan.timeline.map((phase) => (
+                {plan.timeline.map((phase, index) => (
                   <div key={phase.phase}>
-                    <span>{phase.phase}</span>
-                    <strong>{phase.duration}</strong>
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <strong>{phase.phase}</strong>
+                    <b>{phase.duration}</b>
                     <p>{phase.deliverable}</p>
                     <small>Depends on: {phase.dependencies.join(', ')}</small>
                   </div>
@@ -273,7 +499,12 @@ export default function Home() {
               </div>
             </div>
             <div id="validation">
-              <h2>Validation approach</h2>
+              <div className="sectionTitle compact">
+                <div>
+                  <span>Decision quality</span>
+                  <h2>Validation approach</h2>
+                </div>
+              </div>
               <div className="validationGrid">
                 {plan.validation.map((validation) => (
                   <div key={validation.metric}>
@@ -286,11 +517,44 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="panel" id="review">
-            <div className="sectionTitle">
-              <span>Stretch goal</span>
-              <h2>Scientist review loop</h2>
+          <section className="panel supportGrid">
+            <div>
+              <div className="sectionTitle compact">
+                <div>
+                  <span>Team</span>
+                  <h2>Staffing</h2>
+                </div>
+              </div>
+              <ul className="cleanList">
+                {plan.staffing.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </div>
+            <div>
+              <div className="sectionTitle compact">
+                <div>
+                  <span>Risk</span>
+                  <h2>Mitigations</h2>
+                </div>
+              </div>
+              <ul className="cleanList">
+                {plan.risksAndMitigations.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <section className="panel reviewPanel" id="review">
+            <div className="sectionTitle">
+              <div>
+                <span>Stretch goal</span>
+                <h2>Scientist review loop</h2>
+              </div>
+              <div className="statusPill done">Structured feedback</div>
+            </div>
+
             {plan.appliedFeedback.length ? (
               <div className="memoryBox">
                 <strong>Applied prior feedback</strong>
@@ -299,11 +563,12 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <p className="muted">No prior review memory matched this experiment type yet.</p>
+              <div className="emptyState">No prior review memory matched this experiment type yet.</div>
             )}
+
             <form className="reviewForm" onSubmit={submitReview}>
               <label>
-                Section
+                Section to correct
                 <select
                   value={reviewSection}
                   onChange={(event) => setReviewSection(event.target.value as ReviewCorrection['section'])}
@@ -316,7 +581,7 @@ export default function Home() {
                 </select>
               </label>
               <label>
-                Rating
+                Scientist rating
                 <input
                   max="5"
                   min="1"
@@ -344,7 +609,7 @@ export default function Home() {
                   required
                 />
               </label>
-              <button className="primary" type="submit">
+              <button className="primaryButton" type="submit">
                 Save structured correction
               </button>
               {reviewSaved ? <p className="success">{reviewSaved}</p> : null}
